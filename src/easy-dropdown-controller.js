@@ -1,11 +1,13 @@
-
-
 import angular from 'angular';
+import $ from 'jquery';
+
+const closeAllEvent = 'easyDropdown:closeAll';
 
 class EasyDropdownController {
 
-  constructor($document) {
-    this.$document = $document;
+  constructor($window, $rootScope) {
+    this.$window = $window;
+    this.$rootScope = $rootScope;
 
     this.isField = true;
     this.down = false;
@@ -22,20 +24,21 @@ class EasyDropdownController {
   }
 
   init(domNode, settings) {
-    const self = this;
+    // const self = this;
 
-    $.extend(self, settings);
-    self.$select = $(domNode);
-    self.id = domNode.id;
-    self.options = [];
-    self.$options = self.$select.find('option');
-    self.isTouch = 'ontouchend' in document;
-    self.$select.removeClass(`${self.wrapperClass} dropdown`);
-    if (self.$select.is(':disabled')) {
-      self.disabled = true;
+    angular.extend(this, settings);
+    this.$select = $(domNode);
+    this.id = domNode.id;
+    this.options = [];
+    this.$options = this.$select.find('option');
+    this.isTouch = 'ontouchend' in this.$window.document;
+    this.$select.removeClass(`${this.wrapperClass} dropdown`);
+    if (this.$select.is(':disabled')) {
+      this.disabled = true;
     }
-    if (self.$options.length) {
-      self.$options.each(function (i) {
+    if (this.$options.length) {
+      const self = this;
+      this.$options.each(function (i) {
         const $option = $(this);
         if ($option.is(':selected')) {
           self.selected = {
@@ -45,7 +48,7 @@ class EasyDropdownController {
           self.focusIndex = i;
         }
 
-        if ($option.hasClass('label') && i == 0) {
+        if ($option.hasClass('label') && i === 0) {
           self.hasLabel = true;
           self.label = $option.text();
           $option.attr('value', '');
@@ -58,44 +61,47 @@ class EasyDropdownController {
           });
         }
       });
-      if (!self.selected) {
-        self.selected = {
+      if (!this.selected) {
+        this.selected = {
           index: 0,
-          title: self.$options.eq(0).text(),
+          title: this.$options.eq(0).text(),
         };
-        self.focusIndex = 0;
+        this.focusIndex = 0;
       }
 
-      self.render();
+      this.render();
     }
+
+    // register event handlers
+    this.$rootScope.$on(closeAllEvent, ::this.close);
   }
 
   render() {
-    let self = this,
-      touchClass = self.isTouch && self.nativeTouch ? ' touch' : '',
-      disabledClass = self.disabled ? ' disabled' : '';
+    const touchClass = this.isTouch && this.nativeTouch ? ' touch' : '';
+    const disabledClass = this.disabled ? ' disabled' : '';
 
-    self.$container = self.$select.wrap(`<div class="${self.wrapperClass}${touchClass}${disabledClass}"><span class="old"/></div>`).parent().parent();
-    self.$active = $(`<span class="selected">${self.selected.title}</span>`).appendTo(self.$container);
-    self.$carat = $('<span class="carat"/>').appendTo(self.$container);
-    self.$scrollWrapper = $('<div><ul/></div>').appendTo(self.$container);
-    self.$dropDown = self.$scrollWrapper.find('ul');
-    self.$form = self.$container.closest('form');
-    $.each(self.options, function () {
-      let option = this,
-        active = option.selected ? ' class="active"' : '';
+    this.$container = this.$select.wrap(`<div class="${this.wrapperClass}${touchClass}${disabledClass}"><span class="old"/></div>`).parent().parent();
+    this.$active = $(`<span class="selected">${this.selected.title}</span>`).appendTo(this.$container);
+    this.$carat = $('<span class="carat"/>').appendTo(this.$container);
+    this.$scrollWrapper = $('<div><ul/></div>').appendTo(this.$container);
+    this.$dropDown = this.$scrollWrapper.find('ul');
+    this.$form = this.$container.closest('form');
+    const self = this;
+    $.each(this.options, function () {
+      const option = this;
+      const active = option.selected ? ' class="active"' : '';
       self.$dropDown.append(`<li${active}>${option.title}</li>`);
     });
-    self.$items = self.$dropDown.find('li');
+    this.$items = this.$dropDown.find('li');
 
-    if (self.cutOff && self.$items.length > self.cutOff) self.$container.addClass('scrollable');
+    if (this.cutOff && this.$items.length > this.cutOff) this.$container.addClass('scrollable');
 
-    self.getMaxHeight();
+    this.getMaxHeight();
 
-    if (self.isTouch && self.nativeTouch) {
-      self.bindTouchHandlers();
+    if (this.isTouch && this.nativeTouch) {
+      this.bindTouchHandlers();
     } else {
-      self.bindHandlers();
+      this.bindHandlers();
     }
   }
 
@@ -104,11 +110,11 @@ class EasyDropdownController {
 
     self.maxHeight = 0;
 
-    for (let i = 0; i < self.$items.length; i++) {
+    for (let i = 0; i < self.$items.length; i += 1) {
       this.i = i;
       const $item = self.$items.eq(i);
       self.maxHeight += $item.outerHeight();
-      if (self.cutOff == i + 1) {
+      if (self.cutOff === i + 1) {
         break;
       }
     }
@@ -121,9 +127,9 @@ class EasyDropdownController {
     });
     self.$select.on({
       change() {
-        let $selected = $(this).find('option:selected'),
-          title = $selected.text(),
-          value = $selected.val();
+        const $selected = $(this).find('option:selected');
+        const title = $selected.text();
+        const value = $selected.val();
 
         self.$active.text(title);
         if (typeof self.onChange === 'function') {
@@ -161,8 +167,8 @@ class EasyDropdownController {
     });
 
     $('body').on(`click.easyDropDown.${self.id}`, (e) => {
-      let $target = $(e.target),
-        classNames = self.wrapperClass.split(' ').join('.');
+      const $target = $(e.target);
+      const classNames = self.wrapperClass.split(' ').join('.');
 
       if (!$target.closest(`.${classNames}`).length && self.down) {
         self.close();
@@ -190,26 +196,26 @@ class EasyDropdownController {
     });
 
     self.$select.on({
-      'focus.easyDropDown': function () {
+      'focus.easyDropDown': function focus() {
         self.$container.addClass('focus');
         self.inFocus = true;
       },
-      'blur.easyDropDown': function () {
+      'blur.easyDropDown': function blur() {
         self.$container.removeClass('focus');
         self.inFocus = false;
       },
-      'keydown.easyDropDown': function (e) {
+      'keydown.easyDropDown': function keydown(e) {
         if (self.inFocus) {
           self.keyboardMode = true;
           const key = e.keyCode;
 
-          if (key == 38 || key == 40 || key == 32) {
+          if (key === 38 || key === 40 || key === 32) {
             e.preventDefault();
-            if (key == 38) {
-              self.focusIndex--;
+            if (key === 38) {
+              self.focusIndex -= 1;
               self.focusIndex = self.focusIndex < 0 ? self.$items.length - 1 : self.focusIndex;
-            } else if (key == 40) {
-              self.focusIndex++;
+            } else if (key === 40) {
+              self.focusIndex += 1;
               self.focusIndex = self.focusIndex > self.$items.length - 1 ? 0 : self.focusIndex;
             }
 
@@ -226,20 +232,20 @@ class EasyDropdownController {
           }
 
           if (self.down) {
-            if (key == 9 || key == 27) {
+            if (key === 9 || key === 27) {
               self.close();
-            } else if (key == 13) {
+            } else if (key === 13) {
               e.preventDefault();
               self.select(self.focusIndex);
               self.close();
               return false;
-            } else if (key == 8) {
+            } else if (key === 8) {
               e.preventDefault();
               self.query = self.query.slice(0, -1);
               self.search();
               clearTimeout(self.resetQuery);
               return false;
-            } else if (key != 38 && key != 40) {
+            } else if (key !== 38 && key !== 40) {
               const letter = String.fromCharCode(key);
               self.query += letter;
               self.search();
@@ -247,6 +253,7 @@ class EasyDropdownController {
             }
           }
         }
+        return false;
       },
       'keyup.easyDropDown': function () {
         self.resetQuery = setTimeout(() => {
@@ -255,7 +262,7 @@ class EasyDropdownController {
       },
     });
 
-    self.$dropDown.on('scroll.easyDropDown', (e) => {
+    self.$dropDown.on('scroll.easyDropDown', () => {
       if (self.$dropDown[0].scrollTop >= self.$dropDown[0].scrollHeight - self.maxHeight) {
         self.$container.addClass('bottom');
       } else {
@@ -275,74 +282,67 @@ class EasyDropdownController {
     const self = this;
 
     self.$container
-            .add(self.$select)
-            .add(self.$items)
-            .add(self.$form)
-            .add(self.$dropDown)
-            .off('.easyDropDown');
+      .add(self.$select)
+      .add(self.$items)
+      .add(self.$form)
+      .add(self.$dropDown)
+      .off('.easyDropDown');
     $('body').off(`.${self.id}`);
   }
 
   open() {
-    let self = this,
-      scrollTop = window.scrollY || document.documentElement.scrollTop,
-      scrollLeft = window.scrollX || document.documentElement.scrollLeft,
-      scrollOffset = self.notInViewport(scrollTop);
+    const scrollTop = this.$window.scrollY || this.$window.document.documentElement.scrollTop;
+    const scrollLeft = this.$window.scrollX || this.$window.document.documentElement.scrollLeft;
+    const scrollOffset = this.notInViewport(scrollTop);
 
-    self.closeAll();
-    self.getMaxHeight();
-    self.$select.focus();
-    window.scrollTo(scrollLeft, scrollTop + scrollOffset);
-    self.$container.addClass('open');
-    self.$scrollWrapper.css('height', `${self.maxHeight}px`);
-    self.down = true;
+    this.closeAll();
+    this.getMaxHeight();
+    this.$select.focus();
+    this.$window.scrollTo(scrollLeft, scrollTop + scrollOffset);
+    this.$container.addClass('open');
+    this.$scrollWrapper.css('height', `${this.maxHeight}px`);
+    this.down = true;
   }
 
   close() {
-    const self = this;
-    self.$container.removeClass('open');
-    self.$scrollWrapper.css('height', '0px');
-    self.focusIndex = self.selected.index;
-    self.query = '';
-    self.down = false;
+    this.$container.removeClass('open');
+    this.$scrollWrapper.css('height', '0px');
+    this.focusIndex = this.selected.index;
+    this.query = '';
+    this.down = false;
   }
 
   closeAll() {
-    let self = this,
-      instances = Object.getPrototypeOf(self).instances;
-    for (const key in instances) {
-      const instance = instances[key];
-      instance.close();
-    }
+    this.$rootScope.$emit(closeAllEvent);
   }
 
-  select(index) {
-    const self = this;
-
-    if (typeof index === 'string') {
-      index = self.$select.find(`option[value=${index}]`).index() - 1;
+  select(i) {
+    let index;
+    if (typeof i === 'string') {
+      index = this.$select.find(`option[value=${index}]`).index() - 1;
+    } else {
+      index = i;
     }
 
+    const option = this.options[index];
+    const selectIndex = this.hasLabel ? index + 1 : index;
+    this.$items.removeClass('active').eq(index).addClass('active');
+    this.$active.text(option.title);
+    this.$select
+      .find('option')
+      .removeAttr('selected')
+      .eq(selectIndex)
+      .prop('selected', true)
+      .parent()
+      .trigger('change');
 
-    let option = self.options[index],
-      selectIndex = self.hasLabel ? index + 1 : index;
-    self.$items.removeClass('active').eq(index).addClass('active');
-    self.$active.text(option.title);
-    self.$select
-            .find('option')
-            .removeAttr('selected')
-            .eq(selectIndex)
-            .prop('selected', true)
-            .parent()
-            .trigger('change');
-
-    self.selected = {
+    this.selected = {
       index,
       title: option.title,
     };
-    self.focusIndex = this.i;
-    if (typeof self.onChange === 'function') {
-      self.onChange.call(self.$select[0], {
+    this.focusIndex = this.i;
+    if (typeof this.onChange === 'function') {
+      this.onChange.call(this.$select[0], {
         title: option.title,
         value: option.value,
       });
@@ -350,29 +350,28 @@ class EasyDropdownController {
   }
 
   search() {
-    let self = this,
-      lock = function (i) {
-        self.focusIndex = i;
-        self.$items.removeClass('focus').eq(self.focusIndex).addClass('focus');
-        self.scrollToView();
-      },
-      getTitle = function (i) {
-        return self.options[i].title.toUpperCase();
-      };
+    const lock = (i) => {
+      this.focusIndex = i;
+      this.$items.removeClass('focus').eq(this.focusIndex).addClass('focus');
+      this.scrollToView();
+    };
 
-    for (i = 0; i < self.options.length; i++) {
-      var title = getTitle(i);
-      if (title.indexOf(self.query) == 0) {
+    const getTitle = i => this.options[i].title.toUpperCase();
+
+    for (let i = 0; i < this.options.length; i += 1) {
+      this.i = i;
+      const title = getTitle(i);
+      if (title.indexOf(this.query) === 0) {
         lock(i);
         return;
       }
     }
 
 
-    for (var i = 0; i < self.options.length; i++) {
+    for (let i = 0; i < this.options.length; i += 1) {
       this.i = i;
-      var title = getTitle(i);
-      if (title.indexOf(self.query) > -1) {
+      const title = getTitle(i);
+      if (title.indexOf(this.query) > -1) {
         lock(i);
         break;
       }
@@ -380,22 +379,21 @@ class EasyDropdownController {
   }
 
   scrollToView() {
-    const self = this;
-    if (self.focusIndex >= self.cutOff) {
-      let $focusItem = self.$items.eq(self.focusIndex),
-        scroll = ($focusItem.outerHeight() * (self.focusIndex + 1)) - self.maxHeight;
+    if (this.focusIndex >= this.cutOff) {
+      const $focusItem = this.$items.eq(this.focusIndex);
+      const scroll = ($focusItem.outerHeight() * (this.focusIndex + 1)) - this.maxHeight;
 
-      self.$dropDown.scrollTop(scroll);
+      this.$dropDown.scrollTop(scroll);
     }
   }
 
   notInViewport(scrollTop) {
-    let self = this,
-      range = {
-        min: scrollTop,
-        max: scrollTop + (window.innerHeight || document.documentElement.clientHeight),
-      },
-      menuBottom = self.$dropDown.offset().top + self.maxHeight;
+    const range = {
+      min: scrollTop,
+      max: scrollTop + (this.$window.innerHeight ||
+        this.$window.document.documentElement.clientHeight),
+    };
+    const menuBottom = this.$dropDown.offset().top + this.maxHeight;
 
     if (menuBottom >= range.min && menuBottom <= range.max) {
       return 0;
@@ -412,11 +410,10 @@ class EasyDropdownController {
   }
 
   disable() {
-    const self = this;
-    self.disabled = true;
-    self.$container.addClass('disabled');
-    self.$select.attr('disabled', true);
-    if (!self.down) self.close();
+    this.disabled = true;
+    this.$container.addClass('disabled');
+    this.$select.attr('disabled', true);
+    if (!this.down) this.close();
   }
 
   enable() {
@@ -428,6 +425,6 @@ class EasyDropdownController {
 
 }
 
-EasyDropdownController.$inject = ['$document'];
+EasyDropdownController.$inject = ['$window', '$rootScope'];
 
 export default EasyDropdownController;
