@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ng-easy-dropdown</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css"></head>
+    <link rel="stylesheet" type="text/css" href="src/ng-easy-dropdown.css"></head>
+<body>
+
+<!--<h1>ng-easy-dropdown</h1>-->
+
+<div ng-app="app">
+    <easy-dropdown></easy-dropdown>
+</div>
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.20.12/system.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.slim.min.js"></script>
+
+
+<script>
+    System.config({
+        map: {
+            'angular': 'https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular.min.js'
+        }
+    });
+    System.import('dist/index.js').then(function() {
+        angular.module('app', ['ng-easy-dropdown']);
+    })
+</script>
+
+</html>
