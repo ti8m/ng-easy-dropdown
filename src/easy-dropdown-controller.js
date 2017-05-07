@@ -128,30 +128,30 @@ class EasyDropdownController {
   }
 
   bindTouchHandlers() {
-    const self = this;
-    self.$container.on('click.easyDropDown', () => {
-      self.$select.focus();
+    this.$container.on('click', () => {
+      this.$select[0].focus();
     });
-    self.$select.on({
-      change() {
-        const $selected = $(this).find('option:selected');
-        const title = $selected.text();
-        const value = $selected.val();
 
-        self.$active.text(title);
-        if (typeof self.onChange === 'function') {
-          self.onChange.call(self.$select[0], {
-            title,
-            value,
-          });
-        }
-      },
-      focus() {
-        self.$container.addClass('focus');
-      },
-      blur() {
-        self.$container.removeClass('focus');
-      },
+    this.$select.on('change', (e) => {
+      const selected = e.target.querySelectorAll('option:checked')[0];
+      const title = selected.innerText;
+      const value = selected.value;
+
+      this.$active.text(title);
+      if (typeof this.onChange === 'function') {
+        this.onChange.call(this.$select[0], {
+          title,
+          value,
+        });
+      }
+    });
+
+    this.$select.on('focus', () => {
+      this.$container.addClass('focus');
+    });
+
+    this.$select.on('focus', () => {
+      this.$container.removeClass('focus');
     });
   }
 
@@ -338,13 +338,14 @@ class EasyDropdownController {
     const selectIndex = this.hasLabel ? index + 1 : index;
     this.$items.removeClass('active').eq(index).addClass('active');
     this.$active.text(option.title);
+
     this.$select
       .find('option')
       .removeAttr('selected')
       .eq(selectIndex)
       .prop('selected', true)
       .parent()
-      .trigger('change');
+      .triggerHandler('change');
 
     this.selected = {
       index,
