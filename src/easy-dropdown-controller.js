@@ -1,7 +1,10 @@
 import angular from 'angular';
-import $ from 'jquery';
+// import $ from 'jquery';
+import './polyfills';
+import { getElementIndex, siblings } from './helpers';
 
 const closeAllEvent = 'easyDropdown:closeAll';
+const $ = angular.element;
 
 class EasyDropdownController {
 
@@ -23,44 +26,41 @@ class EasyDropdownController {
     this.instances = {};
   }
 
-  init(domNode, settings) {
-    // const self = this;
-
+  init(selectElement, settings) {
     angular.extend(this, settings);
-    this.$select = $(domNode);
-    this.id = domNode.id;
+    this.$select = selectElement;
     this.options = [];
     this.$options = this.$select.find('option');
     this.isTouch = 'ontouchend' in this.$window.document;
     this.$select.removeClass(`${this.wrapperClass} dropdown`);
-    if (this.$select.is(':disabled')) {
+    if (this.$select[0].matches(':disabled')) {
       this.disabled = true;
     }
     if (this.$options.length) {
-      const self = this;
-      this.$options.each(function (i) {
-        const $option = $(this);
-        if ($option.is(':selected')) {
-          self.selected = {
+      window.o = this.$options;
+      angular.forEach(this.$options, (option, i) => {
+        if (option.matches(':checked')) {
+          this.selected = {
             index: i,
-            title: $option.text(),
+            title: option.innerText,
           };
-          self.focusIndex = i;
+          this.focusIndex = i;
         }
 
-        if ($option.hasClass('label') && i === 0) {
-          self.hasLabel = true;
-          self.label = $option.text();
-          $option.attr('value', '');
+        if (option.matches('.label') && i === 0) {
+          this.hasLabel = true;
+          this.label = option.innerText;
+          option.setAttribute('value', '');
         } else {
-          self.options.push({
-            domNode: $option[0],
-            title: $option.text(),
-            value: $option.val(),
-            selected: $option.is(':selected'),
+          this.options.push({
+            domNode: option,
+            title: option.innerText,
+            value: option.value,
+            selected: option.matches(':checked'),
           });
         }
       });
+
       if (!this.selected) {
         this.selected = {
           index: 0,
@@ -80,17 +80,24 @@ class EasyDropdownController {
     const touchClass = this.isTouch && this.nativeTouch ? ' touch' : '';
     const disabledClass = this.disabled ? ' disabled' : '';
 
-    this.$container = this.$select.wrap(`<div class="${this.wrapperClass}${touchClass}${disabledClass}"><span class="old"/></div>`).parent().parent();
-    this.$active = $(`<span class="selected">${this.selected.title}</span>`).appendTo(this.$container);
-    this.$carat = $('<span class="carat"/>').appendTo(this.$container);
-    this.$scrollWrapper = $('<div><ul/></div>').appendTo(this.$container);
+    this.$container = this.$select
+      .wrap(`<div class="${this.wrapperClass}${touchClass}${disabledClass}"></div>`)
+      .wrap('<span class="old">')
+      .parent()
+      .parent();
+
+    this.$active = $(`<span class="selected">${this.selected.title}</span>`);
+    this.$container.append(this.$active);
+    this.$carat = $('<span class="carat"/>');
+    this.$container.append(this.$carat);
+    this.$scrollWrapper = $('<div><ul/></div>');
+    this.$container.append(this.$scrollWrapper);
     this.$dropDown = this.$scrollWrapper.find('ul');
-    this.$form = this.$container.closest('form');
-    const self = this;
-    $.each(this.options, function () {
-      const option = this;
-      const active = option.selected ? ' class="active"' : '';
-      self.$dropDown.append(`<li${active}>${option.title}</li>`);
+    this.$form = $(this.$container[0].closest('form'));
+
+    this.options.forEach((o) => {
+      const active = o.selected ? ' class="active"' : '';
+      this.$dropDown.append(`<li${active}>${o.title}</li>`);
     });
     this.$items = this.$dropDown.find('li');
 
@@ -113,7 +120,7 @@ class EasyDropdownController {
     for (let i = 0; i < self.$items.length; i += 1) {
       this.i = i;
       const $item = self.$items.eq(i);
-      self.maxHeight += $item.outerHeight();
+      self.maxHeight += $item[0].offsetHeight;
       if (self.cutOff === i + 1) {
         break;
       }
@@ -150,130 +157,133 @@ class EasyDropdownController {
 
   bindHandlers() {
     const self = this;
-    self.query = '';
-    self.$container.on({
-      'click.easyDropDown': function () {
-        if (!self.down && !self.disabled) {
-          self.open();
-        } else {
-          self.close();
-        }
-      },
-      'mousemove.easyDropDown': function () {
-        if (self.keyboardMode) {
-          self.keyboardMode = false;
-        }
-      },
-    });
+    this.query = '';
 
-    $('body').on(`click.easyDropDown.${self.id}`, (e) => {
-      const $target = $(e.target);
-      const classNames = self.wrapperClass.split(' ').join('.');
-
-      if (!$target.closest(`.${classNames}`).length && self.down) {
-        self.close();
-      }
-    });
-
-    self.$items.on({
-      'click.easyDropDown': function () {
-        const index = $(this).index();
-        self.select(index);
-        self.$select.focus();
-      },
-      'mouseover.easyDropDown': function () {
-        if (!self.keyboardMode) {
-          const $t = $(this);
-          $t.addClass('focus').siblings().removeClass('focus');
-          self.focusIndex = $t.index();
-        }
-      },
-      'mouseout.easyDropDown': function () {
-        if (!self.keyboardMode) {
-          $(this).removeClass('focus');
-        }
-      },
-    });
-
-    self.$select.on({
-      'focus.easyDropDown': function focus() {
-        self.$container.addClass('focus');
-        self.inFocus = true;
-      },
-      'blur.easyDropDown': function blur() {
-        self.$container.removeClass('focus');
-        self.inFocus = false;
-      },
-      'keydown.easyDropDown': function keydown(e) {
-        if (self.inFocus) {
-          self.keyboardMode = true;
-          const key = e.keyCode;
-
-          if (key === 38 || key === 40 || key === 32) {
-            e.preventDefault();
-            if (key === 38) {
-              self.focusIndex -= 1;
-              self.focusIndex = self.focusIndex < 0 ? self.$items.length - 1 : self.focusIndex;
-            } else if (key === 40) {
-              self.focusIndex += 1;
-              self.focusIndex = self.focusIndex > self.$items.length - 1 ? 0 : self.focusIndex;
-            }
-
-            if (!self.down) {
-              self.open();
-            }
-
-            self.$items.removeClass('focus').eq(self.focusIndex).addClass('focus');
-            if (self.cutOff) {
-              self.scrollToView();
-            }
-
-            self.query = '';
-          }
-
-          if (self.down) {
-            if (key === 9 || key === 27) {
-              self.close();
-            } else if (key === 13) {
-              e.preventDefault();
-              self.select(self.focusIndex);
-              self.close();
-              return false;
-            } else if (key === 8) {
-              e.preventDefault();
-              self.query = self.query.slice(0, -1);
-              self.search();
-              clearTimeout(self.resetQuery);
-              return false;
-            } else if (key !== 38 && key !== 40) {
-              const letter = String.fromCharCode(key);
-              self.query += letter;
-              self.search();
-              clearTimeout(self.resetQuery);
-            }
-          }
-        }
-        return false;
-      },
-      'keyup.easyDropDown': function () {
-        self.resetQuery = setTimeout(() => {
-          self.query = '';
-        }, 1200);
-      },
-    });
-
-    self.$dropDown.on('scroll.easyDropDown', () => {
-      if (self.$dropDown[0].scrollTop >= self.$dropDown[0].scrollHeight - self.maxHeight) {
-        self.$container.addClass('bottom');
+    this.$container.on('click', (e) => {
+      if (!this.down && !this.disabled) {
+        this.open();
       } else {
-        self.$container.removeClass('bottom');
+        this.close();
+      }
+      e.stopPropagation();
+    });
+
+    this.$container.on('mousemove', () => {
+      if (this.keyboardMode) {
+        this.keyboardMode = false;
       }
     });
 
-    if (self.$form.length) {
-      self.$form.on('reset.easyDropDown', () => {
-        const active = self.hasLabel ? self.label : self.options[0].title;
-        self.$active.text(active);
+    $(this.$window.document.body).on('click', (e) => {
+      const classNames = this.wrapperClass.split(' ').join('.');
+
+      if (!e.target.closest(`.${classNames}`).length && this.down) {
+        this.close();
+      }
+    });
+
+    this.$items.on('click', (e) => {
+      const index = getElementIndex(e.target);
+      this.select(index);
+      this.$select[0].focus();
+    });
+
+    this.$items.on('mouseover', (e) => {
+      if (!this.keyboardMode) {
+        const $t = $(e.target);
+        $t.addClass('focus');
+        siblings($t[0]).forEach(s => $(s).removeClass('focus'));
+        this.focusIndex = getElementIndex(e.target);
+      }
+    });
+
+    this.$items.on('mouseout', (e) => {
+      if (!this.keyboardMode) {
+        $(e.target).removeClass('focus');
+      }
+    });
+
+    this.$select.on('focus', () => {
+      this.$container.addClass('focus');
+      this.inFocus = true;
+    });
+
+    this.$select.on('blur', () => {
+      this.$container.removeClass('focus');
+      this.inFocus = false;
+    });
+
+    this.$select.on('keydown', (e) => {
+      if (this.inFocus) {
+        this.keyboardMode = true;
+        const key = e.keyCode;
+
+        if (key === 38 || key === 40 || key === 32) {
+          e.preventDefault();
+          if (key === 38) {
+            this.focusIndex -= 1;
+            this.focusIndex = this.focusIndex < 0 ? this.$items.length - 1 : this.focusIndex;
+          } else if (key === 40) {
+            this.focusIndex += 1;
+            this.focusIndex = this.focusIndex > this.$items.length - 1 ? 0 : this.focusIndex;
+          }
+
+          if (!this.down) {
+            this.open();
+          }
+          this.$items.removeClass('focus');
+          this.$items[this.focusIndex].addClass('focus');
+
+          if (this.cutOff) {
+            this.scrollToView();
+          }
+
+          this.query = '';
+        }
+
+        if (this.down) {
+          if (key === 9 || key === 27) {
+            this.close();
+          } else if (key === 13) {
+            e.preventDefault();
+            this.select(this.focusIndex);
+            this.close();
+            return false;
+          } else if (key === 8) {
+            e.preventDefault();
+            this.query = this.query.slice(0, -1);
+            this.search();
+            clearTimeout(this.resetQuery);
+            return false;
+          } else if (key !== 38 && key !== 40) {
+            const letter = String.fromCharCode(key);
+            this.query += letter;
+            this.search();
+            clearTimeout(this.resetQuery);
+          }
+        }
+      }
+      return false;
+    });
+
+    this.$select.on('keyup', () => {
+      this.resetQuery = setTimeout(() => {
+        this.query = '';
+      }, 1200);
+    });
+
+    this.$dropDown.on('scroll', () => {
+      if (this.$dropDown[0].scrollTop >= this.$dropDown[0].scrollHeight - this.maxHeight) {
+        this.$container.addClass('bottom');
+      } else {
+        this.$container.removeClass('bottom');
+      }
+    });
+
+    if (this.$form.length) {
+      this.$form.on('reset', () => {
+        const active = this.hasLabel ? this.label : self.options[0].title;
+        this.$active.text(active);
       });
     }
   }
@@ -297,7 +307,7 @@ class EasyDropdownController {
 
     this.closeAll();
     this.getMaxHeight();
-    this.$select.focus();
+    this.$select[0].focus();
     this.$window.scrollTo(scrollLeft, scrollTop + scrollOffset);
     this.$container.addClass('open');
     this.$scrollWrapper.css('height', `${this.maxHeight}px`);
@@ -393,7 +403,9 @@ class EasyDropdownController {
       max: scrollTop + (this.$window.innerHeight ||
         this.$window.document.documentElement.clientHeight),
     };
-    const menuBottom = this.$dropDown.offset().top + this.maxHeight;
+
+    const menuBottom = this.$dropDown[0].getBoundingClientRect().top +
+      document.body.scrollTop + this.maxHeight;
 
     if (menuBottom >= range.min && menuBottom <= range.max) {
       return 0;

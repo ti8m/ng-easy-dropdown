@@ -14,10 +14,17 @@
 
 <div ng-app="app">
     <div style="margin-bottom: 150px;">
-        <easy-dropdown></easy-dropdown>
+        <easy-dropdown>
+            <option value="1">Option 1</option>
+            <option value="2">Option 2</option>
+            <option value="3">Option 3</option>
+            <option value="4">Option 4</option>
+        </easy-dropdown>
     </div>
     <div>
-        <easy-dropdown></easy-dropdown>
+        <!--<easy-dropdown>-->
+            <!--<option ng-repeat="i in [1, 2, 3, 4, 5]" ng-value="i">Option {{i}}</option>-->
+        <!--</easy-dropdown>-->
     </div>
 </div>
 
@@ -25,6 +32,8 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.20.12/system.js"></script>
 <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.slim.min.js"></script>-->
+<!--<script src="dist/index.js"></script>-->
+
 
 
 <script>

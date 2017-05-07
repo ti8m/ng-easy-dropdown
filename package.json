@@ -14,7 +14,13 @@
   "author": "Raphael Voellmy",
   "license": "ISC",
   "dependencies": {
-    "angular": "^1.6.4"
+    "angular": "^1.6.4",
+    "browserify": "^14.3.0",
+    "gulp-better-rollup": "^1.1.1",
+    "gulp-rename": "^1.2.2",
+    "gulp-sourcemaps": "^2.6.0",
+    "matches-selector-polyfill": "^1.0.0",
+    "rollup-plugin-babel": "^2.7.1"
   },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
@@ -23,6 +29,8 @@
     "eslint": "^3.19.0",
     "eslint-config-airbnb": "^14.1.0",
     "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-jsx-a11y": "^5.0.0",
+    "eslint-plugin-react": "^7.0.0",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-browserify": "^0.5.1",
