@@ -177,7 +177,7 @@ class EasyDropdownController {
     $(this.$window.document.body).on('click', (e) => {
       const classNames = this.wrapperClass.split(' ').join('.');
 
-      if (!e.target.closest(`.${classNames}`).length && this.down) {
+      if (!e.target.closest(`.${classNames}`) && this.down) {
         this.close();
       }
     });
