@@ -1,7 +1,7 @@
 import angular from 'angular';
 // import $ from 'jquery';
 import './polyfills';
-import { getElementIndex, siblings } from './helpers';
+import { getElementIndex, siblings, unwrap } from './helpers';
 
 const closeAllEvent = 'easyDropdown:closeAll';
 const $ = angular.element;
@@ -110,18 +110,17 @@ class EasyDropdownController {
     } else {
       this.bindHandlers();
     }
+    this.rendered = true;
   }
 
   getMaxHeight() {
-    const self = this;
+    this.maxHeight = 0;
 
-    self.maxHeight = 0;
-
-    for (let i = 0; i < self.$items.length; i += 1) {
+    for (let i = 0; i < this.$items.length; i += 1) {
       this.i = i;
-      const $item = self.$items.eq(i);
-      self.maxHeight += $item[0].offsetHeight;
-      if (self.cutOff === i + 1) {
+      const $item = this.$items.eq(i);
+      this.maxHeight += $item[0].offsetHeight;
+      if (this.cutOff === i + 1) {
         break;
       }
     }
@@ -289,15 +288,18 @@ class EasyDropdownController {
   }
 
   unbindHandlers() {
-    const self = this;
-
-    self.$container
-      .add(self.$select)
-      .add(self.$items)
-      .add(self.$form)
-      .add(self.$dropDown)
-      .off('.easyDropDown');
-    $('body').off(`.${self.id}`);
+    this.$container.off('click');
+    this.$container.off('mousemove');
+    $(this.$window.document.body).off('click');
+    this.$items.off('click');
+    this.$items.off('mouseover');
+    this.$items.off('mouseout');
+    this.$select.off('focus');
+    this.$select.off('blur');
+    this.$select.off('keydown');
+    this.$select.off('keyup');
+    this.$dropDown.off('scroll');
+    this.$form.off('reset');
   }
 
   open() {
@@ -415,11 +417,11 @@ class EasyDropdownController {
   }
 
   destroy() {
-    const self = this;
-    self.unbindHandlers();
-    self.$select.unwrap().siblings().remove();
-    self.$select.unwrap();
-    delete Object.getPrototypeOf(self).instances[self.$select[0].id];
+    this.unbindHandlers();
+    unwrap(this.$select[0]);
+    siblings(this.$select[0]).forEach(el => el.remove());
+    unwrap(this.$select[0]);
+    this.rendered = false;
   }
 
   disable() {
