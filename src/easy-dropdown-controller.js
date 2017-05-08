@@ -185,6 +185,7 @@ class EasyDropdownController {
       const index = getElementIndex(e.target);
       this.select(index);
       this.$select[0].focus();
+      e.target.setAttribute('selected', 'selected');
     });
 
     this.$items.on('mouseover', (e) => {
@@ -394,9 +395,9 @@ class EasyDropdownController {
   scrollToView() {
     if (this.focusIndex >= this.cutOff) {
       const $focusItem = this.$items.eq(this.focusIndex);
-      const scroll = ($focusItem.outerHeight() * (this.focusIndex + 1)) - this.maxHeight;
+      const scroll = ($focusItem[0].offsetHeight * (this.focusIndex + 1)) - this.maxHeight;
 
-      this.$dropDown.scrollTop(scroll);
+      this.$dropDown[0].scrollTop = scroll;
     }
   }
 

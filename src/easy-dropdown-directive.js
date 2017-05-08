@@ -1,7 +1,10 @@
+import { getElementIndex } from './helpers';
+
 /**
- * Get the collection out ogf a comprehension string such as 'for i in [1, 2, 3, 4, 5]'
+ * Get the collection out of a comprehension string such as
+ * 'for i in [1, 2, 3, 4, 5]' or 'for i in array' etc...
  * @param comprehensionString
- * @returns {*|XML|string|void}
+ * @returns {string}
  */
 function getCollectionName(comprehensionString) {
   return comprehensionString.replace(/.*\sin\s([^ ]+).*/, '$1');
@@ -11,10 +14,11 @@ function easyDropdownDirective($timeout) {
   return {
     restrict: 'A',
     controller: 'easyDropdownController',
+    require: ['easyDropdown', '?ngModel'],
     scope: {
       settings: '<',
     },
-    link: (scope, element, attrs, ctrl) => {
+    link: (scope, element, attrs, [ctrl, ngModelController]) => {
 
       function init() {
         ctrl.init(element, scope.settings || {});
@@ -54,6 +58,20 @@ function easyDropdownDirective($timeout) {
         } else {
           // static options -> render without watching
           init();
+        }
+      });
+
+      // watch model changes and set the dropdown value if the value changed
+      scope.$watch(() => ngModelController.$modelValue, (newValue) => {
+        if (newValue && ctrl.rendered) {
+          $timeout(() => {
+            const selectedOption = element[0].querySelector('[selected]');
+
+            if (selectedOption) {
+              const index = getElementIndex(selectedOption);
+              ctrl.select(index);
+            }
+          });
         }
       });
     },
