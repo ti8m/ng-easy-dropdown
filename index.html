@@ -13,19 +13,48 @@
 <!--<h1>ng-easy-dropdown</h1>-->
 
 <div ng-app="app">
-    <div style="margin-bottom: 150px;">
-        <easy-dropdown>
-            <option value="1">Option 1</option>
-            <option value="2">Option 2</option>
-            <option value="3">Option 3</option>
-            <option value="4">Option 4</option>
-        </easy-dropdown>
-    </div>
-    <div>
-        <!--<easy-dropdown>-->
-            <!--<option ng-repeat="i in [1, 2, 3, 4, 5]" ng-value="i">Option {{i}}</option>-->
-        <!--</easy-dropdown>-->
-    </div>
+    <form>
+        <div style="margin-bottom: 150px;" ng-init="array1 = [1, 2, 3, 4, 5]; counter = 6;">
+            <h1>With ng-options</h1>
+            <select easy-dropdown ng-options="i for i in array1" ng-model="model1" ng-init="model1 = 1"></select>
+            <code>Model: {{model1}}</code>
+            <button ng-click="array1.push(6)">add 6</button>
+            <button ng-click="model1 = 3">change to 3</button>
+
+            <select name="" id="">
+                <option value="">1</option>
+                <option value="">2</option>
+                <option value="">3</option>
+                <option value="">4</option>
+                <option value="">5</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 150px;" ng-init="array2 = [1, 2, 3, 4, 5]; counter = 6;">
+            <h1>With ng-repeat</h1>
+            <select easy-dropdown ng-model="model2" ng-init="model2 = 1">
+                <option ng-value="i" ng-repeat="i in array2">Option {{i}}</option>
+            </select>
+            <code>Model: {{model2}}</code>
+            <button ng-click="array2.push(6)">add 6</button>
+        </div>
+
+        <div style="margin-bottom: 150px;" ng-init="counter = 6;">
+            <h1>With static ng-repeat list</h1>
+            <select easy-dropdown ng-model="model3" ng-init="model3 = 1">
+                <option ng-value="i" ng-repeat="i in [1, 2, 3, 4, 5]">Option {{i}}</option>
+            </select>
+            <code>Model: {{model3}}</code>
+        </div>
+
+        <div style="margin-bottom: 150px;" ng-init="counter = 6;">
+            <h1>With static ng-options list</h1>
+            <select easy-dropdown ng-options="i for i in [1, 2, 3, 4, 5]" ng-model="model4" ng-init="model4 = 1">
+            </select>
+            <code>Model: {{model4}}</code>
+        </div>
+    </form>
+
 </div>
 
 </body>

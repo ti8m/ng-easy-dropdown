@@ -117,7 +117,6 @@ class EasyDropdownController {
     this.maxHeight = 0;
 
     for (let i = 0; i < this.$items.length; i += 1) {
-      this.i = i;
       const $item = this.$items.eq(i);
       this.maxHeight += $item[0].offsetHeight;
       if (this.cutOff === i + 1) {
@@ -217,8 +216,9 @@ class EasyDropdownController {
       if (this.inFocus) {
         this.keyboardMode = true;
         const key = e.keyCode;
+        const wasDown = this.down;
 
-        if (key === 38 || key === 40 || key === 32) {
+        if (key === 38 || key === 40 || key === 32 || key === 13) {
           e.preventDefault();
           if (key === 38) {
             this.focusIndex -= 1;
@@ -228,11 +228,16 @@ class EasyDropdownController {
             this.focusIndex = this.focusIndex > this.$items.length - 1 ? 0 : this.focusIndex;
           }
 
-          if (!this.down) {
+          // open the dropdown with space or enter
+          if (!this.down && key !== 38 && key !== 40) {
             this.open();
+          } else {
+            this.select(this.focusIndex);
           }
-          this.$items.removeClass('focus');
-          this.$items[this.focusIndex].addClass('focus');
+          this.$items
+            .removeClass('focus')
+            .eq(this.focusIndex)
+            .addClass('focus');
 
           if (this.cutOff) {
             this.scrollToView();
@@ -244,7 +249,7 @@ class EasyDropdownController {
         if (this.down) {
           if (key === 9 || key === 27) {
             this.close();
-          } else if (key === 13) {
+          } else if (key === 13 && wasDown) {
             e.preventDefault();
             this.select(this.focusIndex);
             this.close();
@@ -329,14 +334,7 @@ class EasyDropdownController {
     this.$rootScope.$emit(closeAllEvent);
   }
 
-  select(i) {
-    let index;
-    if (typeof i === 'string') {
-      index = this.$select.find(`option[value=${index}]`).index() - 1;
-    } else {
-      index = i;
-    }
-
+  select(index) {
     const option = this.options[index];
     const selectIndex = this.hasLabel ? index + 1 : index;
     this.$items.removeClass('active').eq(index).addClass('active');
@@ -354,7 +352,7 @@ class EasyDropdownController {
       index,
       title: option.title,
     };
-    this.focusIndex = this.i;
+    this.focusIndex = index;
     if (typeof this.onChange === 'function') {
       this.onChange.call(this.$select[0], {
         title: option.title,
@@ -373,7 +371,6 @@ class EasyDropdownController {
     const getTitle = i => this.options[i].title.toUpperCase();
 
     for (let i = 0; i < this.options.length; i += 1) {
-      this.i = i;
       const title = getTitle(i);
       if (title.indexOf(this.query) === 0) {
         lock(i);
@@ -383,7 +380,6 @@ class EasyDropdownController {
 
 
     for (let i = 0; i < this.options.length; i += 1) {
-      this.i = i;
       const title = getTitle(i);
       if (title.indexOf(this.query) > -1) {
         lock(i);
@@ -405,7 +401,7 @@ class EasyDropdownController {
     const range = {
       min: scrollTop,
       max: scrollTop + (this.$window.innerHeight ||
-        this.$window.document.documentElement.clientHeight),
+      this.$window.document.documentElement.clientHeight),
     };
 
     const menuBottom = this.$dropDown[0].getBoundingClientRect().top +
