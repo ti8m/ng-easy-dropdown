@@ -61,19 +61,21 @@ function easyDropdownDirective($timeout) {
         }
       });
 
-      // watch model changes and set the dropdown value if the value changed
-      scope.$watch(() => ngModelController.$modelValue, (newValue) => {
-        if (newValue && ctrl.rendered) {
-          $timeout(() => {
-            const selectedOption = element[0].querySelector('[selected]');
+      if (ngModelController) {
+        // watch model changes and set the dropdown value if the value changed
+        scope.$watch(() => ngModelController.$modelValue, (newValue) => {
+          if (newValue && ctrl.rendered) {
+            $timeout(() => {
+              const selectedOption = element[0].querySelector('[selected]');
 
-            if (selectedOption) {
-              const index = getElementIndex(selectedOption);
-              ctrl.select(index);
-            }
-          });
-        }
-      });
+              if (selectedOption) {
+                const index = getElementIndex(selectedOption);
+                ctrl.select(index);
+              }
+            });
+          }
+        });
+      }
     },
   };
 }

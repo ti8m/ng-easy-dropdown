@@ -261,8 +261,7 @@ class EasyDropdownController {
             clearTimeout(this.resetQuery);
             return false;
           } else if (key !== 38 && key !== 40) {
-            const letter = String.fromCharCode(key);
-            this.query += letter;
+            this.query += String.fromCharCode(key);
             this.search();
             clearTimeout(this.resetQuery);
           }
@@ -391,9 +390,8 @@ class EasyDropdownController {
   scrollToView() {
     if (this.focusIndex >= this.cutOff) {
       const $focusItem = this.$items.eq(this.focusIndex);
-      const scroll = ($focusItem[0].offsetHeight * (this.focusIndex + 1)) - this.maxHeight;
-
-      this.$dropDown[0].scrollTop = scroll;
+      this.$dropDown[0].scrollTop =
+        ($focusItem[0].offsetHeight * (this.focusIndex + 1)) - this.maxHeight;
     }
   }
 
