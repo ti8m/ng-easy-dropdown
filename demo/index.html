@@ -432,28 +432,11 @@
 </section>
 
 </body>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.20.12/system.js"></script>
-<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.slim.min.js"></script>-->
-<!--<script src="dist/index.js"></script>-->
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular.min.js"></script>
+<script src="/ng-easy-dropdown/dist/ng-easy-dropdown.min.js"></script>
 
 <script>
-  System.config({
-    baseURL: "/ng-easy-dropdown",
-    packages: {
-      '': {
-        defaultExtension: 'js'
-      }
-    },
-    map: {
-      'angular': 'https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular.min.js',
-      'jquery': 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.slim.min.js'
-    }
-  });
-  System.import('dist/index.js').then(function () {
-    angular.module('app', ['ng-easy-dropdown']);
-  })
+  angular.module('app', ['ng-easy-dropdown']);
 </script>
 
 </html>
