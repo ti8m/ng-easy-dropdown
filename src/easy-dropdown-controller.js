@@ -247,7 +247,9 @@ class EasyDropdownController {
         }
 
         if (this.down) {
-          if (key === 9 || key === 27) {
+          if (key === 16) {
+            this.shift = true;
+          } else if (key === 9 || key === 27) {
             this.close();
           } else if (key === 13 && wasDown) {
             e.preventDefault();
@@ -260,8 +262,10 @@ class EasyDropdownController {
             this.search();
             clearTimeout(this.resetQuery);
             return false;
-          } else if (key !== 38 && key !== 40) {
-            this.query += String.fromCharCode(key);
+          } else if (key !== 16 && key !== 38 && key !== 40) {
+            this.query += this.shift
+              ? String.fromCharCode(key)
+              : String.fromCharCode(key).toLowerCase();
             this.search();
             clearTimeout(this.resetQuery);
           }
@@ -270,7 +274,11 @@ class EasyDropdownController {
       return true;
     });
 
-    this.$select.on('keyup', () => {
+
+    this.$select.on('keyup', (e) => {
+      if (e.keyCode === 16) {
+        this.shift = false;
+      }
       this.resetQuery = setTimeout(() => {
         this.query = '';
       }, 1200);
@@ -367,16 +375,18 @@ class EasyDropdownController {
       this.scrollToView();
     };
 
-    const getTitle = i => this.options[i].title.toUpperCase();
+    const getTitle = i => this.options[i].title;
 
     for (let i = 0; i < this.options.length; i += 1) {
       const title = getTitle(i);
+      const titleLowercase = getTitle(i).toLowerCase();
       if (title.indexOf(this.query) === 0) {
         lock(i);
         return;
+      } else if (titleLowercase.indexOf(this.query.toLowerCase()) === 0) {
+        lock(i);
       }
     }
-
 
     for (let i = 0; i < this.options.length; i += 1) {
       const title = getTitle(i);
