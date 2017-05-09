@@ -267,7 +267,7 @@ class EasyDropdownController {
           }
         }
       }
-      return false;
+      return true;
     });
 
     this.$select.on('keyup', () => {

@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "description": "Stylable HTML Select Angular Component",
   "main": "dist/ng-easy-dropdown.js",
+  "registry": "npm",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
