@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ng-easy-dropdown</title>
+
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/meyer-reset/2.0/reset.min.css">
+</head>
+<link rel="stylesheet" type="text/css" href="src/ng-easy-dropdown.css">
+</head>
+<body>
+
+<!--<h1>ng-easy-dropdown</h1>-->
+
+<div ng-app="app">
+    <form>
+        <div style="margin-bottom: 150px;" ng-init="array1 = [1, 2, 3, 4, 5]; counter = 6;">
+            <h1>With ng-options</h1>
+            <select easy-dropdown ng-options="i for i in array1" ng-model="model1" ng-init="model1 = 1"></select>
+            <code>Model: {{model1}}</code>
+            <button ng-click="array1.push(6)">add 6</button>
+            <button ng-click="model1 = 3">change to 3</button>
+
+            <select name="" id="">
+                <option value="">1</option>
+                <option value="">2</option>
+                <option value="">3</option>
+                <option value="">4</option>
+                <option value="">5</option>
+            </select>
+        </div>
+
+        <div style="margin-bottom: 150px;" ng-init="array2 = [1, 2, 3, 4, 5]; counter = 6;">
+            <h1>With ng-repeat</h1>
+            <select easy-dropdown ng-model="model2" ng-init="model2 = 1">
+                <option ng-value="i" ng-repeat="i in array2">Option {{i}}</option>
+            </select>
+            <code>Model: {{model2}}</code>
+            <button ng-click="array2.push(6)">add 6</button>
+        </div>
+
+        <div style="margin-bottom: 150px;" ng-init="counter = 6;">
+            <h1>With static ng-repeat list</h1>
+            <select easy-dropdown ng-model="model3" ng-init="model3 = 1">
+                <option ng-value="i" ng-repeat="i in [1, 2, 3, 4, 5]">Option {{i}}</option>
+            </select>
+            <code>Model: {{model3}}</code>
+        </div>
+
+        <div style="margin-bottom: 150px;" ng-init="counter = 6;">
+            <h1>With static ng-options list</h1>
+            <select easy-dropdown ng-options="i for i in [1, 2, 3, 4, 5]" ng-model="model4" ng-init="model4 = 1">
+            </select>
+            <code>Model: {{model4}}</code>
+        </div>
+    </form>
+
+</div>
+
+</body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/systemjs/0.20.12/system.js"></script>
+<!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.slim.min.js"></script>-->
+<!--<script src="dist/index.js"></script>-->
+
+
+
+<script>
+  System.config({
+    packages: {
+      '': {
+        defaultExtension: 'js'
+      }
+    },
+    map: {
+      'angular': 'https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.6.4/angular.min.js',
+      'jquery': 'https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.slim.min.js'
+    }
+  });
+  System.import('dist/index.js').then(function () {
+    angular.module('app', ['ng-easy-dropdown']);
+  })
+</script>
+
+</html>
