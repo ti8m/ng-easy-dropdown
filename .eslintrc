@@ -1,10 +1,15 @@
 {
+  "plugins": ["jasmine"],
   "parser": "babel-eslint",
-  "extends": "airbnb",
+  "extends": ["airbnb", "plugin:jasmine/recommended"],
   "env": {
     "browser": true
   },
   "rules": {
     "func-names": "off"
+  },
+  "globals": {
+    "describe": true,
+    "angular": true
   }
 }

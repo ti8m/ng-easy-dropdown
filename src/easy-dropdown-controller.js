@@ -8,9 +8,10 @@ const $ = angular.element;
 
 class EasyDropdownController {
 
-  constructor($window, $rootScope) {
+  constructor($window, $rootScope, $timeout) {
     this.$window = $window;
     this.$rootScope = $rootScope;
+    this.$timeout = $timeout;
 
     this.isField = true;
     this.down = false;
@@ -31,7 +32,7 @@ class EasyDropdownController {
     this.$select = selectElement;
     this.options = [];
     this.$options = this.$select.find('option');
-    this.isTouch = 'ontouchend' in this.$window.document;
+    this.isTouch = ('ontouchend' in this.$window.document) && !this.disableTouch;
     this.$select.removeClass(`${this.wrapperClass} dropdown`);
     if (this.$select[0].matches(':disabled')) {
       this.disabled = true;
@@ -260,14 +261,14 @@ class EasyDropdownController {
             e.preventDefault();
             this.query = this.query.slice(0, -1);
             this.search();
-            clearTimeout(this.resetQuery);
+            this.$timeout.cancel(this.resetQuery);
             return false;
           } else if (key !== 16 && key !== 38 && key !== 40) {
             this.query += this.shift
               ? String.fromCharCode(key)
               : String.fromCharCode(key).toLowerCase();
             this.search();
-            clearTimeout(this.resetQuery);
+            this.$timeout.cancel(this.resetQuery);
           }
         }
       }
@@ -279,7 +280,7 @@ class EasyDropdownController {
       if (e.keyCode === 16) {
         this.shift = false;
       }
-      this.resetQuery = setTimeout(() => {
+      this.resetQuery = this.$timeout(() => {
         this.query = '';
       }, 1200);
     });
@@ -369,7 +370,7 @@ class EasyDropdownController {
   }
 
   search() {
-    const lock = (i) => {
+    const focusIndex = (i) => {
       this.focusIndex = i;
       this.$items.removeClass('focus').eq(this.focusIndex).addClass('focus');
       this.scrollToView();
@@ -377,24 +378,48 @@ class EasyDropdownController {
 
     const getTitle = i => this.options[i].title;
 
-    for (let i = 0; i < this.options.length; i += 1) {
-      const title = getTitle(i);
-      const titleLowercase = getTitle(i).toLowerCase();
-      if (title.indexOf(this.query) === 0) {
-        lock(i);
-        return;
-      } else if (titleLowercase.indexOf(this.query.toLowerCase()) === 0) {
-        lock(i);
-      }
-    }
+    let foundIndex = null;
 
     for (let i = 0; i < this.options.length; i += 1) {
       const title = getTitle(i);
-      if (title.indexOf(this.query) > -1) {
-        lock(i);
+      const titleLowercase = title.toLowerCase();
+      if (title.indexOf(this.query) === 0) {
+        foundIndex = i;
+        break;
+      } else if (titleLowercase.indexOf(this.query) === 0) {
+        foundIndex = i;
+        break;
+      } else if (title.indexOf(this.query) > 0) {
+        foundIndex = i;
+        break;
+      } else if (titleLowercase.indexOf(this.query) > 0) {
+        foundIndex = i;
         break;
       }
     }
+
+    if (foundIndex) {
+      focusIndex(foundIndex);
+    }
+
+    // for (let i = 0; i < this.options.length; i += 1) {
+    //   const title = getTitle(i);
+    //   const titleLowercase = getTitle(i).toLowerCase();
+    //   if (title.indexOf(this.query) === 0) {
+    //     focusIndex(i);
+    //   } else if (titleLowercase.indexOf(this.query.toLowerCase()) === 0) {
+    //     focusIndex(i);
+    //     return;
+    //   }
+    // }
+    //
+    // for (let i = 0; i < this.options.length; i += 1) {
+    //   const title = getTitle(i);
+    //   if (title.indexOf(this.query) > -1) {
+    //     focusIndex(i);
+    //     break;
+    //   }
+    // }
   }
 
   scrollToView() {
@@ -445,6 +470,6 @@ class EasyDropdownController {
 
 }
 
-EasyDropdownController.$inject = ['$window', '$rootScope'];
+EasyDropdownController.$inject = ['$window', '$rootScope', '$timeout'];
 
 export default EasyDropdownController;

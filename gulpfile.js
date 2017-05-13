@@ -2,6 +2,7 @@ const gulp = require('gulp');
 const plugins = require('gulp-load-plugins')();
 const babel = require('rollup-plugin-babel');
 const runSequence = require('run-sequence');
+const karma = require('karma');
 
 gulp.task('build', () => gulp
   .src('src/index.js')
@@ -44,6 +45,13 @@ gulp.task('dist', cb => runSequence('clean', 'build', 'minify', cb));
 gulp.task('clean', () => gulp
   .src('dist')
   .pipe(plugins.clean()));
+
+gulp.task('test', (done) => {
+  new karma.Server({
+    configFile: __dirname + '/karma.conf.js',
+    singleRun: true,
+  }, done).start();
+});
 
 gulp.task('watch', () => gulp.watch('src/*.js', ['build']));
 
